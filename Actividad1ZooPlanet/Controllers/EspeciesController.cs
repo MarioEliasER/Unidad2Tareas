@@ -1,6 +1,7 @@
 ﻿using Actividad1ZooPlanet.Models.Entities;
 using Actividad1ZooPlanet.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Actividad1ZooPlanet.Controllers
 {
@@ -22,6 +23,30 @@ namespace Actividad1ZooPlanet.Controllers
                 ListaEspecies = datos
             };
             return View(vm);
+        }
+
+        public IActionResult Detalles(string Id)
+        {
+            AnimalesContext context = new();
+            var datos = context.Especies.Include(x=> x.IdClaseNavigation).FirstOrDefault(x=> x.Especie == Id);
+            if (datos == null)
+            {
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                DetallesViewModel vm = new()
+                {
+                    Id = datos.Id,
+                    Nombre = datos.Especie,
+                    Clase = datos.IdClaseNavigation.Nombre,
+                    Peso = datos.Peso,
+                    Tamaño = datos.Tamaño,
+                    Habitat = datos.Habitat??"N/A",
+                    Descripcion = datos.Observaciones??"N/A"
+                };
+                return View(vm);
+            }
         }
     }
 }
