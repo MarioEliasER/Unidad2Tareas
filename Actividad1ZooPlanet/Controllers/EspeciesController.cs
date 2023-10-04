@@ -9,20 +9,27 @@ namespace Actividad1ZooPlanet.Controllers
     {
         public IActionResult Index(string Id)
         {
-            AnimalesContext context = new AnimalesContext();
+            AnimalesContext context = new();
             var clase = context.Clase.Where(x=> x.Nombre == Id).FirstOrDefault();
-            var datos = context.Especies.OrderBy(x => x.Especie).Where(x => x.IdClase == clase.Id).Select(x => new EspecieModel
+            if (clase == null)
             {
-                Id = x.Id,
-                Nombre = x.Especie ?? ""
-            });
-            IndexEspeciesViewModel vm = new()
+                return RedirectToAction("Index");
+            }
+            else
             {
-                Id = clase.Id,
-                Especie = Id,
-                ListaEspecies = datos
-            };
-            return View(vm);
+                var datos = context.Especies.OrderBy(x => x.Especie).Where(x => x.IdClase == clase.Id).Select(x => new EspecieModel
+                {
+                    Id = x.Id,
+                    Nombre = x.Especie ?? ""
+                });
+                IndexEspeciesViewModel vm = new()
+                {
+                    Id = clase.Id,
+                    Especie = Id,
+                    ListaEspecies = datos
+                };
+                return View(vm);
+            }
         }
 
         public IActionResult Detalles(string Id)
@@ -39,11 +46,11 @@ namespace Actividad1ZooPlanet.Controllers
                 {
                     Id = datos.Id,
                     Nombre = datos.Especie,
-                    Clase = datos.IdClaseNavigation.Nombre,
+                    Clase = datos.IdClaseNavigation?.Nombre ?? "N/A",
                     Peso = datos.Peso,
                     Tamaño = datos.Tamaño,
-                    Habitat = datos.Habitat??"N/A",
-                    Descripcion = datos.Observaciones??"N/A"
+                    Habitat = datos.Habitat ?? "N/A",
+                    Descripcion = datos.Observaciones ?? "N/A"
                 };
                 return View(vm);
             }
